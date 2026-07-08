@@ -1,26 +1,10 @@
-# BMTC Transportation Analysis
+## Key Findings
+- 🚌 Busiest Route: G-3 (Brigade Road ↔ Electronic City Wipro Gate) — 122 trips
+- 🚏 Busiest Stop: Kempegowda Bus Station — 3,165 stop visits
+- ⏰ Peak Hour: 8 AM (double-peak pattern — morning + evening rush)
 
-Analysis of Bangalore Metropolitan Transport Corporation (BMTC) public transit data 
-to uncover patterns in routes, stops, and trip schedules.
+## Dashboard
+![Power BI Dashboard](dashboard.png)
 
-## Dataset
-- Source: Kaggle (BMTC GTFS data, Oct 2024)
-- Files: routes, stops, stop_times, trips, routes_with_coordinates
-
-## Status: In Progress 🚧
-
-## What I've done so far
-- Profiled all 5 datasets (shape, columns, data types)
-- Identified data quality issues:
-  - `routes_with_coordinates.csv` has missing latitude/longitude for all rows
-  - `routes.csv` had two fully empty columns (`route_desc`, `route_url`) — dropped
-- Cleaned `routes.csv` down to 7 usable columns
-
-## Next steps
-- Clean remaining files (stops, stop_times, trips)
-- Answer key questions: busiest routes, peak hours, route distribution
-- Build visualizations
-- Power BI dashboard
-
-## Tools
-Python, Pandas, Jupyter Notebook
+## Tools Used
+Python, pandas, matplotlib, Power BI

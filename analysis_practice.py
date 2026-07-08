@@ -1,4 +1,8 @@
 import pandas as pd
+import matplotlib.pyplot as plt
+import matplotlib.cm as cm
+import numpy as np
+
 
 df1 = pd.read_csv(r"D:\DataAnalytics\DataAnalyticsProject\Public_Transport\routes_with_coordinates.csv")
 print(df1.shape)
@@ -63,3 +67,43 @@ print(df3.head(10))
 busiest_hours = df3["hour"].value_counts().head(10)
 busiest_hours = busiest_hours.reset_index()
 print("Busiest Hours","\n", busiest_hours)
+
+busiest_routes.to_csv('busiest_routes.csv', index=False)
+busiest_stops.to_csv('busiest_stops.csv', index=False)
+busiest_hours.to_csv('peak_hours.csv', index=False)
+
+#Chart 1: Top 10 Busiest Routes (horizontal bar chart)
+plt.figure(figsize=(12,8))
+busiest_routes_sorted = busiest_routes.sort_values('count', ascending=True)
+colors = cm.Purples(np.linspace(0.2, 0.9, len(busiest_routes_sorted)))
+plt.barh(busiest_routes_sorted["route_id"], busiest_routes_sorted['count'], color=colors)
+for index, value in enumerate(busiest_routes_sorted['count']):
+    plt.text(value, index, f' {value}', va='center')
+plt.xlabel("Number of Trips")
+plt.title("Top 10 Busiest BMTC Routes")
+plt.tight_layout()
+plt.savefig('busiest_routes.png', dpi=150, bbox_inches='tight')
+plt.show()
+
+#Chart 2: Top 10 Busiest Stops (horizontal bar chart)
+plt.figure(figsize=(12,8))
+busiest_stops_sorted = busiest_stops.sort_values('count',ascending=True)
+colors = cm.Purples(np.linspace(0.2, 0.9, len(busiest_stops_sorted)))
+plt.barh(busiest_stops_sorted['stop_name'], busiest_stops_sorted['count'], color=colors)
+for index, value in enumerate(busiest_stops_sorted['count']):
+    plt.text(value, index, f' {value}', va='center')
+plt.xlabel("Number of Trips")
+plt.title("Top 10 Busiest BMTC Stops")
+plt.tight_layout()
+plt.savefig('busiest_stops.png', dpi=150, bbox_inches='tight')
+plt.show()
+
+#Chart 3: Busiest Hours
+plt.figure(figsize=(12,8))
+busiest_hours['hour'] = busiest_hours['hour'].astype(int)
+busiest_hours_sorted = busiest_hours.sort_values('hour')
+plt.bar(busiest_hours['hour'], busiest_hours['count'], color='steelblue')
+plt.xlabel("Hours of a day")
+plt.title("Busiest Hours")
+plt.savefig('busiest_hours.png', dpi=150, bbox_inches='tight')
+plt.show()
