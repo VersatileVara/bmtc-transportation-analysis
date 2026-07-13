@@ -107,3 +107,8 @@ plt.xlabel("Hours of a day")
 plt.title("Busiest Hours")
 plt.savefig('busiest_hours.png', dpi=150, bbox_inches='tight')
 plt.show()
+
+import pandas as pd
+print(pd.read_csv('busiest_routes.csv').head(2))
+print(pd.read_csv('busiest_stops.csv').head(2))
+print(pd.read_csv('peak_hours.csv').head(2))
