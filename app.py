@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
-import numpy as np
+import plotly.express as px
 
 # ── Page config ──────────────────────────────────────────────
 st.set_page_config(
@@ -25,18 +24,18 @@ def load_data():
 
 routes_df, stops_df, hours_df = load_data()
 
-# Detect trip-count column in routes (could be 'count' or 'trip_count')
-count_col = "count" if "count" in routes_df.columns else routes_df.select_dtypes(include="number").columns[0]
+# Detect trip-count column in routes
+count_col = "count" if "count" in routes_df.columns else \
+            routes_df.select_dtypes(include="number").columns[0]
 
 # ── KPI Cards ─────────────────────────────────────────────────
 st.subheader("📊 Key Highlights")
 k1, k2, k3, k4, k5 = st.columns(5)
-
-k1.metric("🚌 Busiest Route",  str(routes_df.iloc[0]["route_id"]))
+k1.metric("🚌 Busiest Route",    str(routes_df.iloc[0]["route_id"]))
 k2.metric("🔢 Trips (Top Route)", str(int(routes_df.iloc[0][count_col])))
-k3.metric("🚏 Busiest Stop",  stops_df.iloc[0]["stop_name"].split()[0] + " BS")
-k4.metric("👥 Stop Visits",   str(int(stops_df.iloc[0]["count"])))
-k5.metric("⏰ Peak Hour",     f"{int(hours_df.iloc[0]['hour']):02d}:00")
+k3.metric("🚏 Busiest Stop",     stops_df.iloc[0]["stop_name"])
+k4.metric("👥 Stop Visits",      str(int(stops_df.iloc[0]["count"])))
+k5.metric("⏰ Peak Hour",        f"{int(hours_df.iloc[0]['hour']):02d}:00")
 
 st.markdown("---")
 
@@ -46,47 +45,47 @@ col1, col2 = st.columns(2)
 # Chart 1 — Busiest Routes
 with col1:
     st.subheader("🛣️ Top 10 Busiest Routes")
-    fig, ax = plt.subplots(figsize=(7, 5))
-    sorted_routes = routes_df.sort_values(count_col, ascending=True)
-    colors = plt.cm.Purples(np.linspace(0.4, 0.9, len(sorted_routes)))
-    bars = ax.barh(sorted_routes["route_id"], sorted_routes[count_col], color=colors)
-    for bar, val in zip(bars, sorted_routes[count_col]):
-        ax.text(bar.get_width() + 0.5, bar.get_y() + bar.get_height()/2,
-                str(int(val)), va="center", fontsize=9)
-    ax.set_xlabel("Number of Trips")
-    ax.set_title("Top 10 Busiest BMTC Routes")
-    ax.spines[["top","right"]].set_visible(False)
-    plt.tight_layout()
-    st.pyplot(fig)
+    fig1 = px.bar(
+        routes_df.sort_values(count_col, ascending=True),
+        x=count_col, y="route_id",
+        orientation="h",
+        color=count_col,
+        color_continuous_scale="Purples",
+        labels={count_col: "Number of Trips", "route_id": "Route"},
+        title="Top 10 Busiest BMTC Routes"
+    )
+    fig1.update_layout(coloraxis_showscale=False, showlegend=False)
+    st.plotly_chart(fig1, use_container_width=True)
 
 # Chart 2 — Busiest Stops
 with col2:
     st.subheader("🚏 Top 10 Busiest Stops")
-    fig2, ax2 = plt.subplots(figsize=(7, 5))
-    sorted_stops = stops_df.sort_values("count", ascending=True)
-    colors2 = plt.cm.Purples(np.linspace(0.4, 0.9, len(sorted_stops)))
-    bars2 = ax2.barh(sorted_stops["stop_name"], sorted_stops["count"], color=colors2)
-    for bar, val in zip(bars2, sorted_stops["count"]):
-        ax2.text(bar.get_width() + 5, bar.get_y() + bar.get_height()/2,
-                 str(int(val)), va="center", fontsize=9)
-    ax2.set_xlabel("Number of Stop Visits")
-    ax2.set_title("Top 10 Busiest BMTC Stops")
-    ax2.spines[["top","right"]].set_visible(False)
-    plt.tight_layout()
-    st.pyplot(fig2)
+    fig2 = px.bar(
+        stops_df.sort_values("count", ascending=True),
+        x="count", y="stop_name",
+        orientation="h",
+        color="count",
+        color_continuous_scale="Purples",
+        labels={"count": "Number of Visits", "stop_name": "Stop"},
+        title="Top 10 Busiest BMTC Stops"
+    )
+    fig2.update_layout(coloraxis_showscale=False, showlegend=False)
+    st.plotly_chart(fig2, use_container_width=True)
 
-# Chart 3 — Peak Hours (full width)
+# Chart 3 — Peak Hours
 st.subheader("⏰ Peak Hour Traffic Pattern")
-fig3, ax3 = plt.subplots(figsize=(12, 4))
-sorted_hours = hours_df.sort_values("hour")
-ax3.bar(sorted_hours["hour"].astype(str).str.zfill(2) + ":00",
-        sorted_hours["count"], color="steelblue", edgecolor="white")
-ax3.set_xlabel("Hour of Day")
-ax3.set_ylabel("Number of Trips")
-ax3.set_title("BMTC Trip Frequency by Hour — Double Peak Pattern (8 AM & 5 PM)")
-ax3.spines[["top","right"]].set_visible(False)
-plt.tight_layout()
-st.pyplot(fig3)
+hours_sorted = hours_df.sort_values("hour").copy()
+hours_sorted["hour_label"] = hours_sorted["hour"].astype(str).str.zfill(2) + ":00"
+fig3 = px.bar(
+    hours_sorted,
+    x="hour_label", y="count",
+    color="count",
+    color_continuous_scale="Blues",
+    labels={"count": "Number of Trips", "hour_label": "Hour of Day"},
+    title="BMTC Trip Frequency by Hour — Double Peak Pattern (8 AM & 5 PM)"
+)
+fig3.update_layout(coloraxis_showscale=False)
+st.plotly_chart(fig3, use_container_width=True)
 
 st.markdown("---")
 
@@ -104,6 +103,6 @@ with tab3:
 st.markdown("---")
 st.markdown(
     "**Data Source:** BMTC GTFS Open Data &nbsp;|&nbsp; "
-    "**Built with:** Python · Pandas · Matplotlib · Streamlit &nbsp;|&nbsp; "
+    "**Built with:** Python · Pandas · Plotly · Streamlit &nbsp;|&nbsp; "
     "**Author:** Varalakshmi"
 )
